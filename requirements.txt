@@ -1,0 +1,13 @@
+selenium
+webdriver-manager
+pymongo
+requests
+python-dotenv
+beautifulsoup4
+lxml
+python-pptx
+pymupdf
+pillow
+pytesseract
+easyocr
+tqdm
