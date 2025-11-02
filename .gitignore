@@ -1,2 +1,8 @@
 .env
 venv/
+
+crawler/__pycache__/
+nlp_analysis/__pycache__/
+evaluation/__pycache__/
+keypoint_model/__pycache__/
+data/materials/

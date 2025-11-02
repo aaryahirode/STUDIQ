@@ -10,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from .lms_scraper import LMS_URL, LMS_USERNAME, LMS_PASSWORD, wait_for_page_ready
+from PyPDF2 import PdfReader
 
 # ---------- Selectors ----------
 POPUP_CLOSE_SELECTOR = (By.ID, "close-popup")
@@ -29,13 +30,46 @@ def start_driver():
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opts)
 
 
-def download_file(url, cookies, local_path):
-    """Downloads file using cookies from Selenium session"""
-    with requests.get(url, cookies=cookies, stream=True) as r:
-        r.raise_for_status()
-        with open(local_path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+# Maximum allowed pages in a PDF
+MAX_PAGES = 50  # change this as needed
+
+def get_pdf_page_count(file_path):
+    """
+    Returns the number of pages in a PDF.
+    Returns 0 if the file is not a readable PDF.
+    """
+    try:
+        reader = PdfReader(file_path)
+        return len(reader.pages)
+    except Exception as e:
+        print(f"[!] Failed to read PDF {file_path}: {e}")
+        return 0
+
+
+def download_file(url, cookies, local_path, max_pages=MAX_PAGES):
+    """
+    Downloads a file using requests with cookies from Selenium session.
+    If it's a PDF, counts the number of pages and deletes if it exceeds max_pages.
+    """
+    try:
+        with requests.get(url, cookies=cookies, stream=True) as r:
+            r.raise_for_status()
+            with open(local_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+        print(f"[+] Downloaded: {local_path}")
+
+        # If the file is a PDF, check the number of pages
+        if local_path.lower().endswith(".pdf"):
+            pages = get_pdf_page_count(local_path)
+            print(f"[i] PDF page count: {pages}")
+            if pages > max_pages:
+                os.remove(local_path)
+                print(f"[!] Deleted {local_path} because it exceeds {max_pages} pages")
+
+    except Exception as e:
+        print(f"[!] Failed to download {url}: {e}")
 
 
 def download_flexpaper_pdf(driver, flex_url, subject_title):
