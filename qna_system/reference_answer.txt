@@ -1,0 +1,1 @@
+Social Media text analysis is art and science of getting business analytics from text posted over social media. A typical SMTA includes the following cyclic steps 1) Identifying and Searching 
